@@ -1,48 +1,68 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:quiz/question_model.dart';
+import 'package:quiz/question_provider.dart';
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class DetailPage extends StatefulWidget {
+  const DetailPage({super.key, required this.questionModel});
 
-  final String title;
+  final QuestionModel questionModel;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<DetailPage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
+class _MyHomePageState extends State<DetailPage> {
+  int answerToQuestion = 5;
   @override
   Widget build(BuildContext context) {
+    final quesionProvider = context.read<QuestionProvider>();
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: const Text("DetailPage"),
+        centerTitle: true,
       ),
-      body: Center(
+      body: Card(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+            Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Text(
+                widget.questionModel.title,
+                style: const TextStyle(fontSize: 20),
+              ),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            Expanded(
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2, // Number of columns in the grid
+                ),
+                itemCount: widget.questionModel.questions.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final data = widget.questionModel.questions[index];
+                  return GestureDetector(
+                    onTap: () {
+                      answerToQuestion = int.parse(data);
+                      if (answerToQuestion == widget.questionModel.answer) {
+                        setState(() {
+                          quesionProvider
+                              .toggleIsAnswerTrue(widget.questionModel.id);
+                        });
+                        Navigator.pop(context);
+                      }
+                      print('hehhehe$answerToQuestion');
+                    },
+                    child: Card(
+                      child: Center(
+                          child: Text(widget.questionModel.questions[index]
+                              .toString())),
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
